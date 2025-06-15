@@ -217,16 +217,27 @@ class BotSort(BaseTracker):
                 return iou_distance(tracks, detections)
 
     def _split_detections(self, dets, embs):
-        # Detections with high confidence
-        first_mask = dets[:, 4] >= self.track_high_thresh
-        dets_first = dets[first_mask]
-        embs_first = embs[first_mask] if embs is not None else []
-
-        # Detections with low confidence
-        second_mask = (~first_mask) & (dets[:, 4] > self.track_low_thresh)
+        dets = np.hstack([dets, np.arange(len(dets)).reshape(-1, 1)])
+        confs = dets[:, 4]
+        second_mask = np.logical_and(
+            confs > self.track_low_thresh, confs < self.track_high_thresh
+        )
         dets_second = dets[second_mask]
-
+        first_mask = confs > self.track_high_thresh
+        dets_first = dets[first_mask]
+        embs_first = embs[first_mask] if embs is not None else None
         return dets, dets_first, embs_first, dets_second
+
+        # # Detections with high confidence
+        # first_mask = dets[:, 4] >= self.track_high_thresh
+        # dets_first = dets[first_mask]
+        # embs_first = embs[first_mask] if embs is not None else []
+
+        # # Detections with low confidence
+        # second_mask = (~first_mask) & (dets[:, 4] > self.track_low_thresh)
+        # dets_second = dets[second_mask]
+
+        # return dets, dets_first, embs_first, dets_second
 
     def _create_detections(self, dets, features, with_reid=True):
         if len(dets) > 0:
