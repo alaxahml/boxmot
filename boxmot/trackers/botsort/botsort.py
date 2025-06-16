@@ -203,7 +203,6 @@ class BotSort(BaseTracker):
         detections,
         activated_stracks,
         refind_stracks,
-        strack_pool,
     ):
 
         # Apply camera motion compensation
