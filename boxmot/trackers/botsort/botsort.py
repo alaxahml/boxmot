@@ -116,30 +116,28 @@ class BotSort(BaseTracker):
         # Separate unconfirmed and active tracks
         unconfirmed, active_tracks = self._separate_tracks()
 
-        # Apply camera motion compensation
-        warp = self.cmc.apply(img, dets)
-        STrack.multi_gmc(active_tracks, warp)
-        STrack.multi_gmc(unconfirmed, warp)
-        STrack.multi_gmc(self.lost_stracks, warp)
+        # First association
+        matches_active, u_track_active, u_det_active = self._first_association(
+            dets,
+            active_tracks,
+            unconfirmed, 
+            img,
+            detections,
+            activated_stracks,
+            refind_stracks,
+        )
 
-        # --- STAGE 1: Associate Active Tracks (Motion + Appearance) ---
-        STrack.multi_predict(active_tracks)
-        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True)
-        matches_active, u_track_active, u_det_active = linear_assignment(dists, thresh=self.match_thresh)
-        self._update_tracks(matches_active, active_tracks, detections, activated_stracks, refind_stracks)
+
 
         # --- STAGE 2: Associate Lost Tracks (Appearance only) ---
         remaining_dets = [detections[i] for i in u_det_active]
 
-        if self.lost_stracks and remaining_dets and self.with_reid:
-            dists_lost = self._calculate_cost_matrix(self.lost_stracks, remaining_dets, use_motion=False)
-            matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.appearance_thresh)
-            self._update_tracks(matches_lost, self.lost_stracks, remaining_dets, activated_stracks, refind_stracks)
-            final_unmatched_det_indices = [u_det_active[i] for i in u_det_lost_indices]
-            unmatched_lost_tracks_indices = u_track_lost
-        else:
-            final_unmatched_det_indices = u_det_active
-            unmatched_lost_tracks_indices = list(range(len(self.lost_stracks)))
+        final_unmatched_dets, unmatched_lost_tracks_indices = self._lost_association(
+            activated_stracks,
+            refind_stracks,
+            remaining_dets
+        )
+    
 
         # --- Combine all tracks that were not matched in the first two stages ---
         unmatched_active_tracks = [active_tracks[i] for i in u_track_active]
@@ -166,12 +164,12 @@ class BotSort(BaseTracker):
 
         # --- STAGE 4: Handle Unconfirmed and New Tracks ---
         if unconfirmed:
-            remaining_high_conf_dets = [detections[i] for i in final_unmatched_det_indices]
-            dists_unc = self._calculate_cost_matrix(unconfirmed, remaining_high_conf_dets, use_motion=True)
+            #remaining_high_conf_dets = [detections[i] for i in final_unmatched_det_indices]
+            dists_unc = self._calculate_cost_matrix(unconfirmed, final_unmatched_dets, use_motion=True)
             matches_unc, u_track_unc, u_det_unc_indices = linear_assignment(dists_unc, thresh=0.7)
 
             for itracked, idet in matches_unc:
-                unconfirmed[itracked].update(remaining_high_conf_dets[idet], self.frame_count)
+                unconfirmed[itracked].update(final_unmatched_dets[idet], self.frame_count)
                 activated_stracks.append(unconfirmed[itracked])
 
             for it in u_track_unc:
@@ -179,10 +177,10 @@ class BotSort(BaseTracker):
                 track.mark_removed()
                 removed_stracks.append(track)
 
-            final_unmatched_det_indices = [final_unmatched_det_indices[i] for i in u_det_unc_indices]
+            final_unmatched_dets = [final_unmatched_dets[i] for i in u_det_unc_indices]
 
         self._initialize_new_tracks(
-            final_unmatched_det_indices,
+            final_unmatched_dets,
             activated_stracks,
             detections,
         )
@@ -193,6 +191,52 @@ class BotSort(BaseTracker):
         return self._prepare_output(
             activated_stracks, refind_stracks, lost_stracks, removed_stracks
         )
+
+
+
+    def _first_association(
+        self,
+        dets,
+        active_tracks,
+        unconfirmed,
+        img,
+        detections,
+        activated_stracks,
+        refind_stracks,
+        strack_pool,
+    ):
+
+        # Apply camera motion compensation
+        warp = self.cmc.apply(img, dets)
+        STrack.multi_gmc(active_tracks, warp)
+        STrack.multi_gmc(unconfirmed, warp)
+        STrack.multi_gmc(self.lost_stracks, warp)
+
+        # --- STAGE 1: Associate Active Tracks (Motion + Appearance) ---
+        STrack.multi_predict(active_tracks)
+        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True)
+        matches_active, u_track_active, u_det_active = linear_assignment(dists, thresh=self.match_thresh)
+        self._update_tracks(matches_active, active_tracks, detections, activated_stracks, refind_stracks)
+
+        return matches_active, u_track_active, u_det_active
+
+    def _lost_association(
+        self,
+        activated_stracks,
+        refind_stracks,
+        remaining_dets,
+    ):
+    
+        if self.lost_stracks and remaining_dets and self.with_reid:
+            dists_lost = self._calculate_cost_matrix(self.lost_stracks, remaining_dets, use_motion=False)
+            matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.appearance_thresh)
+            self._update_tracks(matches_lost, self.lost_stracks, remaining_dets, activated_stracks, refind_stracks)
+            final_unmatched_dets = [remaining_dets[i] for i in u_det_lost_indices]
+            unmatched_lost_tracks_indices = u_track_lost
+        else:
+            final_unmatched_dets = remaining_dets
+            unmatched_lost_tracks_indices = list(range(len(self.lost_stracks)))   
+        return final_unmatched_dets, unmatched_lost_tracks_indices
 
     def _calculate_cost_matrix(self, tracks, detections, use_motion: bool):
         if not tracks or not detections:
@@ -259,9 +303,9 @@ class BotSort(BaseTracker):
                 active_tracks.append(track)
         return unconfirmed, active_tracks
 
-    def _initialize_new_tracks(self, u_detections_indices, activated_stracks, detections):
-        for inew in u_detections_indices:
-            track = detections[inew]
+    def _initialize_new_tracks(self, u_detections, activated_stracks, detections):
+        for track in u_detections:
+            #track = detections[inew]
             if track.conf < self.new_track_thresh:
                 continue
 
