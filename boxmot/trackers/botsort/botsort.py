@@ -145,39 +145,23 @@ class BotSort(BaseTracker):
         tracks_for_low_conf = unmatched_active_tracks + unmatched_lost_tracks
 
         # --- STAGE 3: Second Association (Rescue with Low-Conf Dets) ---
-        if dets_second.any() and tracks_for_low_conf:
-            low_conf_detections = self._create_detections(dets_second, None, with_reid=False)
-            dists_low = iou_distance(tracks_for_low_conf, low_conf_detections)
-            matches_second, u_track_second, _ = linear_assignment(dists_low, thresh=0.5)
-            self._update_tracks(matches_second, tracks_for_low_conf, low_conf_detections, activated_stracks, refind_stracks)
+        self.second_association(
+            dets_second,
+            activated_stracks,
+            refind_stracks,
+            tracks_for_low_conf, 
+            lost_stracks,
+        )
 
-            for i in u_track_second:
-                track = tracks_for_low_conf[i]
-                if not track.state == TrackState.Lost:
-                    track.mark_lost()
-                    lost_stracks.append(track)
-        else:
-            for track in tracks_for_low_conf:
-                if not track.state == TrackState.Lost:
-                    track.mark_lost()
-                    lost_stracks.append(track)
 
         # --- STAGE 4: Handle Unconfirmed and New Tracks ---
-        if unconfirmed:
-            #remaining_high_conf_dets = [detections[i] for i in final_unmatched_det_indices]
-            dists_unc = self._calculate_cost_matrix(unconfirmed, final_unmatched_dets, use_motion=True)
-            matches_unc, u_track_unc, u_det_unc_indices = linear_assignment(dists_unc, thresh=0.7)
-
-            for itracked, idet in matches_unc:
-                unconfirmed[itracked].update(final_unmatched_dets[idet], self.frame_count)
-                activated_stracks.append(unconfirmed[itracked])
-
-            for it in u_track_unc:
-                track = unconfirmed[it]
-                track.mark_removed()
-                removed_stracks.append(track)
-
-            final_unmatched_dets = [final_unmatched_dets[i] for i in u_det_unc_indices]
+        final_unmatched_dets = self._handle_unconfirmed_tracks(
+            unconfirmed,
+            final_unmatched_dets,
+            activated_stracks,
+            removed_stracks,
+        )
+        
 
         self._initialize_new_tracks(
             final_unmatched_dets,
@@ -237,6 +221,56 @@ class BotSort(BaseTracker):
             unmatched_lost_tracks_indices = list(range(len(self.lost_stracks)))   
         return final_unmatched_dets, unmatched_lost_tracks_indices
 
+    def second_association(
+        self,
+        dets_second,
+        activated_stracks,
+        refind_stracks,
+        tracks_for_low_conf, 
+        lost_stracks,
+    ):
+        if dets_second.any() and tracks_for_low_conf:
+            low_conf_detections = self._create_detections(dets_second, None, with_reid=False)
+            dists_low = iou_distance(tracks_for_low_conf, low_conf_detections)
+            matches_second, u_track_second, _ = linear_assignment(dists_low, thresh=0.5)
+            self._update_tracks(matches_second, tracks_for_low_conf, low_conf_detections, activated_stracks, refind_stracks)
+
+            for i in u_track_second:
+                track = tracks_for_low_conf[i]
+                if not track.state == TrackState.Lost:
+                    track.mark_lost()
+                    lost_stracks.append(track)
+        else:
+            for track in tracks_for_low_conf:
+                if not track.state == TrackState.Lost:
+                    track.mark_lost()
+                    lost_stracks.append(track)
+
+        
+    def _handle_unconfirmed_tracks(
+        self,
+        unconfirmed,
+        final_unmatched_dets,
+        activated_stracks,
+        removed_stracks,
+    ):
+        #remaining_high_conf_dets = [detections[i] for i in final_unmatched_det_indices]
+        dists_unc = self._calculate_cost_matrix(unconfirmed, final_unmatched_dets, use_motion=True)
+        matches_unc, u_track_unc, u_det_unc_indices = linear_assignment(dists_unc, thresh=0.7)
+
+        for itracked, idet in matches_unc:
+            unconfirmed[itracked].update(final_unmatched_dets[idet], self.frame_count)
+            activated_stracks.append(unconfirmed[itracked])
+
+        for it in u_track_unc:
+            track = unconfirmed[it]
+            track.mark_removed()
+            removed_stracks.append(track)
+
+        final_unmatched_dets = [final_unmatched_dets[i] for i in u_det_unc_indices]
+        return final_unmatched_dets
+        
+    
     def _calculate_cost_matrix(self, tracks, detections, use_motion: bool):
         if not tracks or not detections:
             return np.empty((len(tracks), len(detections)))
