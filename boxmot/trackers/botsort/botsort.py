@@ -17,7 +17,7 @@ from boxmot.trackers.botsort.botsort_utils import (
     sub_stracks,
 )
 from boxmot.utils.matching import (
-    embedding_distance,
+    embedding_distance_hist,
     fuse_score,
     iou_distance,
     linear_assignment,
@@ -279,7 +279,7 @@ class BotSort(BaseTracker):
             # Combine motion and appearance
             ious_dists = iou_distance(tracks, detections)
             if self.with_reid:
-                emb_dists = embedding_distance(tracks, detections)
+                emb_dists = embedding_distance_hist(tracks, detections)
                 emb_dists[emb_dists > self.appearance_thresh] = 1.0
                 ious_dists_mask = ious_dists > self.proximity_thresh
                 emb_dists[ious_dists_mask] = 1.0
@@ -287,7 +287,7 @@ class BotSort(BaseTracker):
             return ious_dists
         else:  # Appearance only
             if self.with_reid:
-                emb_dists = embedding_distance(tracks, detections)
+                emb_dists = embedding_distance_hist(tracks, detections)
                 emb_dists[emb_dists > self.appearance_thresh] = 1.0
                 return emb_dists
             else:  # Fallback to IoU if reid is disabled

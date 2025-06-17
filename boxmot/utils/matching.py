@@ -196,6 +196,48 @@ def embedding_distance(tracks, detections, metric="cosine"):
     return cost_matrix
 
 
+def embedding_distance_hist(tracks, detections, metric="cosine"):
+    """
+    Compute distance between track feature history and detection features.
+
+    :param tracks: list[STrack]
+        A list of tracks, each with a `features` deque.
+    :param detections: list[BaseTrack]
+        A list of detections, each with a `curr_feat`.
+    :param metric: str
+        The distance metric to use.
+    :return: cost_matrix np.ndarray
+        An M x N matrix where M is the number of tracks and N is the number of detections.
+    """
+    cost_matrix = np.zeros((len(tracks), len(detections)), dtype=np.float32)
+    if cost_matrix.size == 0:
+        return cost_matrix
+
+    det_features = np.asarray([det.curr_feat for det in detections], dtype=np.float32)
+
+    for i, track in enumerate(tracks):
+        # Use feature history if available, otherwise fall back to smooth_feat
+        if track.features:
+            track_hist_features = np.asarray(list(track.features), dtype=np.float32)
+        elif track.smooth_feat is not None:
+            track_hist_features = track.smooth_feat.reshape(1, -1)
+        else:
+            # No features available for this track, assign max distance
+            cost_matrix[i, :] = 1.0
+            continue
+
+        # Calculate distance from all detections to all features in the history of the current track
+        dist = cdist(track_hist_features, det_features, metric)
+
+        # Take the minimum distance for each detection
+        min_dist = np.min(dist, axis=0)
+
+        cost_matrix[i, :] = np.maximum(0.0, min_dist)
+
+    return cost_matrix
+
+
+
 def gate_cost_matrix(kf, cost_matrix, tracks, detections, only_position=False):
     if cost_matrix.size == 0:
         return cost_matrix
