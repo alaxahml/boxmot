@@ -10,7 +10,7 @@ from boxmot.utils.ops import xywh2xyxy, xyxy2xywh
 class STrack(BaseTrack):
     shared_kalman = KalmanFilterXYWH()
 
-    def __init__(self, det, feat=None, feat_history=50, max_obs=50):
+    def __init__(self, det, feat=None, feat_history=300, max_obs=50):
         # Initialize detection parameters
         self.xywh = xyxy2xywh(det[:4])  # Convert to (xc, yc, w, h)
         self.conf = det[4]
