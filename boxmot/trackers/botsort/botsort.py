@@ -17,7 +17,7 @@ from boxmot.trackers.botsort.botsort_utils import (
     sub_stracks,
 )
 from boxmot.utils.matching import (
-    embedding_distance,
+    embedding_distance_hist,
     fuse_score,
     iou_distance,
     linear_assignment,
@@ -226,7 +226,7 @@ class BotSort(BaseTracker):
             ious_dists = fuse_score(ious_dists, detections)
 
         if self.with_reid:
-            emb_dists = embedding_distance(strack_pool, detections) / 2.0
+            emb_dists = embedding_distance_hist(strack_pool, detections) / 2.0
             emb_dists[emb_dists > self.appearance_thresh] = 1.0
             emb_dists[ious_dists_mask] = 1.0
             dists = np.minimum(ious_dists, emb_dists)
@@ -316,7 +316,7 @@ class BotSort(BaseTracker):
 
         # Fuse scores for IoU-based and embedding-based matching (if applicable)
         if self.with_reid:
-            emb_dists = embedding_distance(unconfirmed, detections) / 2.0
+            emb_dists = embedding_distance_hist(unconfirmed, detections) / 2.0
             emb_dists[emb_dists > self.appearance_thresh] = 1.0
             emb_dists[ious_dists_mask] = (
                 1.0  # Apply the IoU mask to embedding distances
