@@ -153,7 +153,7 @@ class STrack(BaseTrack):
         self.det_ind = new_track.det_ind
         self.update_cls(new_track.cls, new_track.conf)
 
-        if self.id == 1:
+        if self.id == 2:
             print(len(self.features))
 
 
