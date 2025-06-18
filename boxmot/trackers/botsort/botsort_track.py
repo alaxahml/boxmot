@@ -48,6 +48,9 @@ class STrack(BaseTrack):
         self.smooth_feat /= np.linalg.norm(self.smooth_feat)
         self.features.append(feat)
 
+        if self.id == 1:
+            print(len(self.features))
+
     def update_cls(self, cls, conf):
         """Update class history based on detection confidence."""
         max_freq = 0
