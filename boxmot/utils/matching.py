@@ -225,10 +225,10 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
             # No features available for this track, assign max distance
             cost_matrix[i, :] = 1.0
             continue
-
+        
         # Calculate distance from all detections to all features in the history of the current track
         dist = cdist(track_hist_features, det_features, metric)
-
+        print(dist)
         # Take the minimum distance for each detection
         min_dist = np.min(dist, axis=0)
 
