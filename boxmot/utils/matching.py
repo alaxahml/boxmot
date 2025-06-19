@@ -228,7 +228,8 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
         
         # Calculate distance from all detections to all features in the history of the current track
         dist = cdist(track_hist_features, det_features, metric)
-        print(dist)
+        if track.id == 2:
+            print(dist)
         # Take the minimum distance for each detection
         min_dist = np.min(dist, axis=0)
 
