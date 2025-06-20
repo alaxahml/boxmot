@@ -116,32 +116,39 @@ class BotSort(BaseTracker):
         # Separate unconfirmed and active tracks
         unconfirmed, active_tracks = self._separate_tracks()
 
+        #final_unmatched_dets, unmatched_lost_tracks_indices
+        matches_lost, u_track_lost, u_det_lost = self._lost_association(
+            activated_stracks,
+            refind_stracks,
+            remaining_dets
+        )
+            
+        remaining_dets = [detections[i] for i in u_det_lost]
+        
         # First association
         matches_active, u_track_active, u_det_active = self._first_association(
             dets,
             active_tracks,
             unconfirmed, 
             img,
-            detections,
+            remaining_dets,
             activated_stracks,
             refind_stracks,
         )
 
+        remaining_dets = [remaining_dets[i] for i in u_det_active]
 
 
-        # --- STAGE 2: Associate Lost Tracks (Appearance only) ---
-        remaining_dets = [detections[i] for i in u_det_active]
-
-        final_unmatched_dets, unmatched_lost_tracks_indices = self._lost_association(
-            activated_stracks,
-            refind_stracks,
-            remaining_dets
-        )
+        # final_unmatched_dets, unmatched_lost_tracks_indices = self._lost_association(
+        #     activated_stracks,
+        #     refind_stracks,
+        #     remaining_dets
+        # )
     
 
         # --- Combine all tracks that were not matched in the first two stages ---
         unmatched_active_tracks = [active_tracks[i] for i in u_track_active]
-        unmatched_lost_tracks = [self.lost_stracks[i] for i in unmatched_lost_tracks_indices]
+        unmatched_lost_tracks = [self.lost_stracks[i] for i in u_track_lost]
         tracks_for_low_conf = unmatched_active_tracks + unmatched_lost_tracks
 
         # --- STAGE 3: Second Association (Rescue with Low-Conf Dets) ---
@@ -157,7 +164,7 @@ class BotSort(BaseTracker):
         # --- STAGE 4: Handle Unconfirmed and New Tracks ---
         final_unmatched_dets = self._handle_unconfirmed_tracks(
             unconfirmed,
-            final_unmatched_dets,
+            remaining_dets,
             activated_stracks,
             removed_stracks,
         )
@@ -219,7 +226,8 @@ class BotSort(BaseTracker):
         else:
             final_unmatched_dets = remaining_dets
             unmatched_lost_tracks_indices = list(range(len(self.lost_stracks)))   
-        return final_unmatched_dets, unmatched_lost_tracks_indices
+        #return final_unmatched_dets, unmatched_lost_tracks_indices
+        return matches_lost, u_track_lost, u_det_lost_indices
 
     def second_association(
         self,
