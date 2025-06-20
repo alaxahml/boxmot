@@ -224,6 +224,7 @@ class BotSort(BaseTracker):
             final_unmatched_dets = [remaining_dets[i] for i in u_det_lost_indices]
             unmatched_lost_tracks_indices = u_track_lost
         else:
+            matches_lost, u_track_lost, u_det_lost_indices = [], [], []
             final_unmatched_dets = remaining_dets
             unmatched_lost_tracks_indices = list(range(len(self.lost_stracks)))   
         #return final_unmatched_dets, unmatched_lost_tracks_indices
