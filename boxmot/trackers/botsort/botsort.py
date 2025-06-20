@@ -225,6 +225,9 @@ class BotSort(BaseTracker):
         if self.fuse_first_associate:
             ious_dists = fuse_score(ious_dists, detections)
 
+        else:
+            print("HERE")
+
         if self.with_reid:
             emb_dists = embedding_distance_hist(strack_pool, detections) / 2.0
             emb_dists[emb_dists > self.appearance_thresh] = 1.0
