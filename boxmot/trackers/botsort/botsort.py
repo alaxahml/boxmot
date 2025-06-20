@@ -233,7 +233,8 @@ class BotSort(BaseTracker):
         else:
             dists = ious_dists
 
-        print(dists[-1])
+        if self.frame_count > 1:
+            print(dists[-1])
         matches, u_track, u_detection = linear_assignment(
             dists, thresh=self.match_thresh
         )
