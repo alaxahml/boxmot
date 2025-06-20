@@ -234,6 +234,7 @@ class BotSort(BaseTracker):
             
             if self.frame_count > 1:
                 print(emb_dists[-1])
+                print(ious_dists[-1])
             dists = np.minimum(ious_dists, emb_dists)
             
 
