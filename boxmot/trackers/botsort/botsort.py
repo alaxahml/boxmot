@@ -120,7 +120,7 @@ class BotSort(BaseTracker):
         matches_lost, u_track_lost, u_det_lost = self._lost_association(
             activated_stracks,
             refind_stracks,
-            remaining_dets
+            detections
         )
             
         remaining_dets = [detections[i] for i in u_det_lost]
