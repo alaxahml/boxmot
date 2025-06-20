@@ -225,19 +225,21 @@ class BotSort(BaseTracker):
         if self.fuse_first_associate:
             ious_dists = fuse_score(ious_dists, detections)
 
-        else:
-            print("HERE")
+  
 
         if self.with_reid:
             emb_dists = embedding_distance_hist(strack_pool, detections) / 2.0
             emb_dists[emb_dists > self.appearance_thresh] = 1.0
             emb_dists[ious_dists_mask] = 1.0
+            
+            if self.frame_count > 1:
+                print(emb_dists[-1])
             dists = np.minimum(ious_dists, emb_dists)
+            
+
         else:
             dists = ious_dists
 
-        if self.frame_count > 1:
-            print(dists[-1])
         matches, u_track, u_detection = linear_assignment(
             dists, thresh=self.match_thresh
         )
