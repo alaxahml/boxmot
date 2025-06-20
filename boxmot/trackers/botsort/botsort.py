@@ -1,6 +1,7 @@
 # Mikel Broström 🔥 Yolo Tracking 🧾 AGPL-3.0 license
 
 from pathlib import Path
+from selectors import DefaultSelector
 
 import numpy as np
 import torch
@@ -124,6 +125,7 @@ class BotSort(BaseTracker):
             active_tracks,
             unconfirmed,
             img,
+            dets,
         )
             
             
@@ -226,6 +228,7 @@ class BotSort(BaseTracker):
         active_tracks,
         unconfirmed,
         img,
+        dets,
     ):
     
         STrack.multi_predict(active_tracks)
