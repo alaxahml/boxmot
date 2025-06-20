@@ -123,7 +123,9 @@ class BotSort(BaseTracker):
             detections
         )
             
+
         remaining_dets = [detections[i] for i in u_det_lost]
+
         
         # First association
         matches_active, u_track_active, u_det_active = self._first_association(
@@ -214,20 +216,16 @@ class BotSort(BaseTracker):
         self,
         activated_stracks,
         refind_stracks,
-        remaining_dets,
+        detections,
     ):
     
-        if self.lost_stracks and remaining_dets and self.with_reid:
-            dists_lost = self._calculate_cost_matrix(self.lost_stracks, remaining_dets, use_motion=False)
-            matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.appearance_thresh)
-            self._update_tracks(matches_lost, self.lost_stracks, remaining_dets, activated_stracks, refind_stracks)
-            final_unmatched_dets = [remaining_dets[i] for i in u_det_lost_indices]
-            unmatched_lost_tracks_indices = u_track_lost
-        else:
-            matches_lost, u_track_lost, u_det_lost_indices = [], [], []
-            final_unmatched_dets = remaining_dets
-            unmatched_lost_tracks_indices = list(range(len(self.lost_stracks)))   
-        #return final_unmatched_dets, unmatched_lost_tracks_indices
+
+        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=False)
+        matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.appearance_thresh)
+        self._update_tracks(matches_lost, self.lost_stracks, detections, activated_stracks, refind_stracks)
+        final_unmatched_dets = [detections[i] for i in u_det_lost_indices]
+        unmatched_lost_tracks_indices = u_track_lost
+
         return matches_lost, u_track_lost, u_det_lost_indices
 
     def second_association(
