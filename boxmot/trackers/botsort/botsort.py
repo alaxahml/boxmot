@@ -198,14 +198,24 @@ class BotSort(BaseTracker):
         refind_stracks,
     ):
 
-        # Apply camera motion compensation
+        STrack.multi_predict(active_tracks)
+        STrack.multi_predict(unconfirmed)
+        STrack.multi_predict(self.lost_stracks)
+
+        # Fix camera motion
         warp = self.cmc.apply(img, dets)
         STrack.multi_gmc(active_tracks, warp)
         STrack.multi_gmc(unconfirmed, warp)
         STrack.multi_gmc(self.lost_stracks, warp)
 
-        # --- STAGE 1: Associate Active Tracks (Motion + Appearance) ---
-        STrack.multi_predict(active_tracks)
+        # # Apply camera motion compensation
+        # warp = self.cmc.apply(img, dets)
+        # STrack.multi_gmc(active_tracks, warp)
+        # STrack.multi_gmc(unconfirmed, warp)
+        # STrack.multi_gmc(self.lost_stracks, warp)
+
+        # # --- STAGE 1: Associate Active Tracks (Motion + Appearance) ---
+        # STrack.multi_predict(active_tracks)
         dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True)
         matches_active, u_track_active, u_det_active = linear_assignment(dists, thresh=self.match_thresh)
         self._update_tracks(matches_active, active_tracks, detections, activated_stracks, refind_stracks)
