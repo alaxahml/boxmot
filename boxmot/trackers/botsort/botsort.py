@@ -245,7 +245,7 @@ class BotSort(BaseTracker):
 
 
 
-        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=False)
+        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=True)
         matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.appearance_thresh)
         self._update_tracks(matches_lost, self.lost_stracks, detections, activated_stracks, refind_stracks)
         final_unmatched_dets = [detections[i] for i in u_det_lost_indices]
