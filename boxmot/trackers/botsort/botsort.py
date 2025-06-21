@@ -234,14 +234,16 @@ class BotSort(BaseTracker):
  
 
         # Fix camera motion
+        STrack.multi_predict(active_tracks)
+        #STrack.multi_predict(unconfirmed)
+        STrack.multi_predict(self.lost_stracks)
+    
         warp = self.cmc.apply(img, dets)
         STrack.multi_gmc(active_tracks, warp)
         STrack.multi_gmc(unconfirmed, warp)
         STrack.multi_gmc(self.lost_stracks, warp)
 
-        STrack.multi_predict(active_tracks)
-        STrack.multi_predict(unconfirmed)
-        STrack.multi_predict(self.lost_stracks)
+
 
         dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=False)
         matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.appearance_thresh)
