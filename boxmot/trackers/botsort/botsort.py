@@ -214,7 +214,7 @@ class BotSort(BaseTracker):
 
         # # --- STAGE 1: Associate Active Tracks (Motion + Appearance) ---
         # STrack.multi_predict(active_tracks)
-        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True)
+        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True, appearance_thresh=self.appearance_thresh)
         matches_active, u_track_active, u_det_active = linear_assignment(dists, thresh=self.match_thresh)
         self._update_tracks(matches_active, active_tracks, detections, activated_stracks, refind_stracks)
 
@@ -287,7 +287,7 @@ class BotSort(BaseTracker):
         removed_stracks,
     ):
         #remaining_high_conf_dets = [detections[i] for i in final_unmatched_det_indices]
-        dists_unc = self._calculate_cost_matrix(unconfirmed, final_unmatched_dets, use_motion=True)
+        dists_unc = self._calculate_cost_matrix(unconfirmed, final_unmatched_dets, use_motion=True, appearance_thresh=self.appearance_thresh)
         matches_unc, u_track_unc, u_det_unc_indices = linear_assignment(dists_unc, thresh=0.7)
 
         for itracked, idet in matches_unc:
@@ -303,7 +303,7 @@ class BotSort(BaseTracker):
         return final_unmatched_dets
         
     
-    def _calculate_cost_matrix(self, tracks, detections, use_motion: bool, appearance_thresh=self.appearance_thresh):
+    def _calculate_cost_matrix(self, tracks, detections, use_motion: bool, appearance_thresh):
         if not tracks or not detections:
             return np.empty((len(tracks), len(detections)))
 
@@ -312,7 +312,7 @@ class BotSort(BaseTracker):
             ious_dists = iou_distance(tracks, detections)
             if self.with_reid:
                 emb_dists = embedding_distance_hist(tracks, detections)
-                emb_dists[emb_dists > self.appearance_thresh] = 1.0
+                emb_dists[emb_dists > appearance_thresh] = 1.0
                 ious_dists_mask = ious_dists > self.proximity_thresh
                 emb_dists[ious_dists_mask] = 1.0
                 return np.minimum(ious_dists, emb_dists)
@@ -320,7 +320,7 @@ class BotSort(BaseTracker):
         else:  # Appearance only
             if self.with_reid:
                 emb_dists = embedding_distance_hist(tracks, detections)
-                emb_dists[emb_dists > self.appearance_thresh] = 1.0
+                emb_dists[emb_dists > appearance_thresh] = 1.0
                 return emb_dists
             else:  # Fallback to IoU if reid is disabled
                 return iou_distance(tracks, detections)
