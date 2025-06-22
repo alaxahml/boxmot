@@ -214,7 +214,7 @@ class BotSort(BaseTracker):
 
         # # --- STAGE 1: Associate Active Tracks (Motion + Appearance) ---
         # STrack.multi_predict(active_tracks)
-        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True, appearance_thresh=0.1)
+        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True)
         matches_active, u_track_active, u_det_active = linear_assignment(dists, thresh=self.match_thresh)
         self._update_tracks(matches_active, active_tracks, detections, activated_stracks, refind_stracks)
 
@@ -245,7 +245,7 @@ class BotSort(BaseTracker):
 
 
 
-        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=False)
+        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=False, appearance_thresh=0.1)
         matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.match_thresh)
         self._update_tracks(matches_lost, self.lost_stracks, detections, activated_stracks, refind_stracks)
         final_unmatched_dets = [detections[i] for i in u_det_lost_indices]
