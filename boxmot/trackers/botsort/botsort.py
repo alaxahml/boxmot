@@ -320,7 +320,7 @@ class BotSort(BaseTracker):
         else:  # Appearance only
             if self.with_reid:
                 emb_dists = embedding_distance_hist(tracks, detections)
-                #emb_dists[emb_dists > appearance_thresh] = 1.0
+                emb_dists[emb_dists > appearance_thresh] = 1.0
                 return emb_dists
             else:  # Fallback to IoU if reid is disabled
                 return iou_distance(tracks, detections)
