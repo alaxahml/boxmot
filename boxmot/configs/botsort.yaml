@@ -15,7 +15,7 @@ new_track_thresh:
 
 track_buffer:
   type: randint
-  default: 30  # from the default parameters
+  default: 300  # from the default parameters
   range: [20, 81]
 
 match_thresh:
@@ -25,12 +25,12 @@ match_thresh:
 
 proximity_thresh:
   type: uniform
-  default: 0.5  # from the default parameters
+  default: 0.2 # from the default parameters
   range: [0.25, 0.75]
 
 appearance_thresh:
   type: uniform
-  default: 0.5  # from the default parameters
+  default: 0.2  # from the default parameters
   range: [0.1, 0.8]
 
 cmc_method:
