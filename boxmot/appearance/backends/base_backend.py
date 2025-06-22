@@ -134,6 +134,8 @@ class BaseModelBackend:
         if w.suffix == ".pt":
             print("HERE2!")
             model_url = ReIDModelRegistry.get_model_url(w)
+            print("w: ", w)
+            print("model url: ", model_url)
             if not w.exists() and model_url is not None:
                 gdown.download(model_url, str(w), quiet=False)
                 print("HERE3!")
