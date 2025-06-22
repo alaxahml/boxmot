@@ -136,6 +136,7 @@ class BaseModelBackend:
             model_url = ReIDModelRegistry.get_model_url(w)
             print("w: ", w)
             print("model url: ", model_url)
+            print(w.exists())
             if not w.exists() and model_url is not None:
                 print("HERE3!")
                 gdown.download(model_url, str(w), quiet=False)
