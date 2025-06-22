@@ -214,7 +214,7 @@ class BotSort(BaseTracker):
 
         # # --- STAGE 1: Associate Active Tracks (Motion + Appearance) ---
         # STrack.multi_predict(active_tracks)
-        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True, appearance_thresh=self.appearance_thresh)
+        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True, appearance_thresh=self.appearance_thresh, proximity_thresh=self.proximity_thresh)
         matches_active, u_track_active, u_det_active = linear_assignment(dists, thresh=self.match_thresh)
         self._update_tracks(matches_active, active_tracks, detections, activated_stracks, refind_stracks)
 
@@ -245,7 +245,7 @@ class BotSort(BaseTracker):
 
 
 
-        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=False, appearance_thresh=0.1)
+        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=True, appearance_thresh=0.1, proximity_thresh=0.5)
         matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.match_thresh)
         self._update_tracks(matches_lost, self.lost_stracks, detections, activated_stracks, refind_stracks)
         final_unmatched_dets = [detections[i] for i in u_det_lost_indices]
@@ -287,7 +287,7 @@ class BotSort(BaseTracker):
         removed_stracks,
     ):
         #remaining_high_conf_dets = [detections[i] for i in final_unmatched_det_indices]
-        dists_unc = self._calculate_cost_matrix(unconfirmed, final_unmatched_dets, use_motion=True, appearance_thresh=self.appearance_thresh)
+        dists_unc = self._calculate_cost_matrix(unconfirmed, final_unmatched_dets, use_motion=True, appearance_thresh=self.appearance_thresh, proximity_thresh=self.proximity_thresh)
         matches_unc, u_track_unc, u_det_unc_indices = linear_assignment(dists_unc, thresh=0.7)
 
         for itracked, idet in matches_unc:
@@ -303,7 +303,7 @@ class BotSort(BaseTracker):
         return final_unmatched_dets
         
     
-    def _calculate_cost_matrix(self, tracks, detections, use_motion: bool, appearance_thresh):
+    def _calculate_cost_matrix(self, tracks, detections, use_motion: bool, appearance_thresh, proximity_thresh):
         if not tracks or not detections:
             return np.empty((len(tracks), len(detections)))
 
@@ -313,7 +313,7 @@ class BotSort(BaseTracker):
             if self.with_reid:
                 emb_dists = embedding_distance_hist(tracks, detections)
                 emb_dists[emb_dists > appearance_thresh] = 1.0
-                ious_dists_mask = ious_dists > self.proximity_thresh
+                ious_dists_mask = ious_dists > proximity_thresh
                 emb_dists[ious_dists_mask] = 1.0
                 return np.minimum(ious_dists, emb_dists)
             return ious_dists
