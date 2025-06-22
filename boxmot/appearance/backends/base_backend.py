@@ -137,10 +137,10 @@ class BaseModelBackend:
             print("w: ", w)
             print("model url: ", model_url)
             if not w.exists() and model_url is not None:
-                gdown.download(model_url, str(w), quiet=False)
                 print("HERE3!")
-            elif not w.exists():
+                gdown.download(model_url, str(w), quiet=False)
                 print("HERE4!")
+            elif not w.exists():
                 LOGGER.error(
                     f"No URL associated with the chosen StrongSORT weights ({w}). Choose between:"
                 )
