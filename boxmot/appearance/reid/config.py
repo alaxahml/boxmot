@@ -39,7 +39,7 @@ TRAINED_URLS = {
     "mobilenetv2_x1_4_dukemtmcreid.pt": "https://drive.google.com/uc?id=12uD5FeVqLg9-AFDju2L7SQxjmPb4zpBN",
     "mobilenetv2_x1_4_msmt17.pt": "https://drive.google.com/uc?id=1ZY5P2Zgm-3RbDpbXM0kIBMPvspeNIbXz",
     # osnet
-    "osnet_x1_0_soccer.pt": "https://drive.google.com/uc?id=1cZ-6yXc3q6aiz2ZnM3MxiGfZHT4y1i-W",
+    #"osnet_x1_0_soccer.pt": "https://drive.google.com/uc?id=1cZ-6yXc3q6aiz2ZnM3MxiGfZHT4y1i-W",
     "osnet_x1_0_market1501.pt": "https://drive.google.com/uc?id=1vduhq5DpN2q1g4fYEZfPI17MJeh9qyrA",
     "osnet_x1_0_dukemtmcreid.pt": "https://drive.google.com/uc?id=1QZO_4sNf4hdOKKKzKc-TZU9WW1v6zQbq",
     "osnet_x1_0_msmt17.pt": "https://drive.google.com/uc?id=112EMUfBPYeYg70w-syK6V6Mx8-Qb9Q1M",
