@@ -25,7 +25,7 @@ match_thresh:
 
 proximity_thresh:
   type: uniform
-  default: 0.2 # from the default parameters
+  default: 0.4 # from the default parameters
   range: [0.25, 0.75]
 
 appearance_thresh:
