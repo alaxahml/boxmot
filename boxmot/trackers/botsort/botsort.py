@@ -245,7 +245,7 @@ class BotSort(BaseTracker):
 
 
 
-        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=True, appearance_thresh=0.1, proximity_thresh=0.5)
+        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=False, appearance_thresh=0.25, proximity_thresh=0.5)
         matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.match_thresh)
         self._update_tracks(matches_lost, self.lost_stracks, detections, activated_stracks, refind_stracks)
         final_unmatched_dets = [detections[i] for i in u_det_lost_indices]
@@ -320,7 +320,7 @@ class BotSort(BaseTracker):
         else:  # Appearance only
             if self.with_reid:
                 emb_dists = embedding_distance_hist(tracks, detections)
-                emb_dists[emb_dists > appearance_thresh] = 1.0
+                #emb_dists[emb_dists > appearance_thresh] = 1.0
                 return emb_dists
             else:  # Fallback to IoU if reid is disabled
                 return iou_distance(tracks, detections)
