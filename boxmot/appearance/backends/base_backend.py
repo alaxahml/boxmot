@@ -130,11 +130,11 @@ class BaseModelBackend:
         raise NotImplementedError("This method should be implemented by subclasses.")
 
     def download_model(self, w):
+        print("HERE!")
         if w.suffix == ".pt":
             model_url = ReIDModelRegistry.get_model_url(w)
             if not w.exists() and model_url is not None:
                 gdown.download(model_url, str(w), quiet=False)
-                print("DOWNLOADED!")
             elif not w.exists():
                 LOGGER.error(
                     f"No URL associated with the chosen StrongSORT weights ({w}). Choose between:"
