@@ -399,41 +399,48 @@ class BotSort(BaseTracker):
             for k in stale_keys:
                 del self._birth_candidates[k]
 
-        for track in u_detections:
-            if track.conf < self.new_track_thresh:
-                continue
+        if self.frame_count >=10:
+            for track in u_detections:
+                if track.conf < self.new_track_thresh:
+                    continue
 
-            # centroid of detection (tlwh)
-            x, y, w, h = track.xywh
-            cx, cy = x + w / 2.0, y + h / 2.0
-            in_edge = self._is_in_edge(cx, cy)
+                # centroid of detection (tlwh)
+                x, y, w, h = track.xywh
+                cx, cy = x + w / 2.0, y + h / 2.0
+                in_edge = self._is_in_edge(cx, cy)
 
-            if in_edge or self.birth_wait == 0:
-                if not in_edge:
-                    # Central births not allowed when birth_wait==0
+                if in_edge or self.birth_wait == 0:
+                    if not in_edge:
+                        # Central births not allowed when birth_wait==0
+                        continue
+                    track.activate(self.kalman_filter, self.frame_count)
+                    activated_stracks.append(track)
+                    continue
+
+                # ----- central candidate handling -----
+                if self.birth_wait > 0:
+                    # Quantise centroid to reduce key proliferation
+                    key = (int(cx // 10), int(cy // 10))
+                    entry = self._birth_candidates.get(key, {"count": 0, "last": self.frame_count})
+                    # reset if we skipped frames
+                    if self.frame_count - entry["last"] > 1:
+                        entry["count"] = 0
+                    entry["count"] += 1
+                    entry["last"] = self.frame_count
+                    self._birth_candidates[key] = entry
+
+                    if entry["count"] >= self.birth_wait:
+                        # allow birth now
+                        track.activate(self.kalman_filter, self.frame_count)
+                        activated_stracks.append(track)
+                        # clear candidate
+                        del self._birth_candidates[key]
+        else:
+            for track in u_detections:
+                if track.conf < self.new_track_thresh:
                     continue
                 track.activate(self.kalman_filter, self.frame_count)
                 activated_stracks.append(track)
-                continue
-
-            # ----- central candidate handling -----
-            if self.birth_wait > 0:
-                # Quantise centroid to reduce key proliferation
-                key = (int(cx // 10), int(cy // 10))
-                entry = self._birth_candidates.get(key, {"count": 0, "last": self.frame_count})
-                # reset if we skipped frames
-                if self.frame_count - entry["last"] > 1:
-                    entry["count"] = 0
-                entry["count"] += 1
-                entry["last"] = self.frame_count
-                self._birth_candidates[key] = entry
-
-                if entry["count"] >= self.birth_wait:
-                    # allow birth now
-                    track.activate(self.kalman_filter, self.frame_count)
-                    activated_stracks.append(track)
-                    # clear candidate
-                    del self._birth_candidates[key]
 
     def _update_tracks(
         self,
