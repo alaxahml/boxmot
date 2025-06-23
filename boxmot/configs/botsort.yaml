@@ -37,3 +37,19 @@ cmc_method:
   type: choice
   default: ecc  # from the default parameters
   options: [sof, ecc]
+
+# --- Birth control parameters ---
+birth_roi:
+  type: choice
+  default: edge
+  options: [edge, full]
+
+birth_margin:
+  type: uniform
+  default: 0.08
+  range: [0.02, 0.2]
+
+birth_wait:
+  type: randint
+  default: 10
+  range: [0, 10]

@@ -64,6 +64,11 @@ class BotSort(BaseTracker):
         frame_rate=30,
         fuse_first_associate: bool = False,
         with_reid: bool = True,
+        # --- New birth control params ---
+        birth_roi: str = "edge",  # edge | full (or custom later)
+        birth_margin: float = 0.08,  # fraction of frame dimension considered as edge
+        birth_wait: int = 0,  # frames to wait before allowing central birth
+
     ):
         super().__init__(per_class=per_class)
         self.lost_stracks = []  # type: list[STrack]
@@ -92,12 +97,22 @@ class BotSort(BaseTracker):
         self.cmc = get_cmc_method(cmc_method)()
         self.fuse_first_associate = fuse_first_associate
 
+        # Birth control settings
+        self.birth_roi = birth_roi
+        self.birth_margin = birth_margin
+        self.birth_wait = birth_wait
+        # key -> {count:int, last:int}
+        self._birth_candidates: dict[tuple[int,int], dict] = {}
+
+
     @BaseTracker.setup_decorator
     @BaseTracker.per_class_decorator
     def update(
         self, dets: np.ndarray, img: np.ndarray, embs: np.ndarray = None
     ) -> np.ndarray:
         self.check_inputs(dets, img, embs)
+        # Store frame size for ROI checks
+        self.frame_h, self.frame_w = img.shape[:2]
         self.frame_count += 1
 
         activated_stracks, refind_stracks, lost_stracks, removed_stracks = [], [], [], []
@@ -368,14 +383,57 @@ class BotSort(BaseTracker):
                 active_tracks.append(track)
         return unconfirmed, active_tracks
 
+    def _is_in_edge(self, cx: float, cy: float) -> bool:
+        """Return True if point is inside the edge ROI as per current frame size."""
+        if self.birth_roi != "edge":
+            return True
+        m = self.birth_margin
+        w, h = self.frame_w, self.frame_h
+        return cx < m * w or cx > (1 - m) * w or cy < m * h or cy > (1 - m) * h
+
     def _initialize_new_tracks(self, u_detections, activated_stracks, detections):
+        """Create new tracks from unmatched detections respecting birth ROI and wait."""
+        # ----- prune stale birth candidates -----
+        if self.birth_wait > 0:
+            stale_keys = [k for k, v in self._birth_candidates.items() if self.frame_count - v["last"] > self.birth_wait]
+            for k in stale_keys:
+                del self._birth_candidates[k]
+
         for track in u_detections:
-            #track = detections[inew]
             if track.conf < self.new_track_thresh:
                 continue
 
-            track.activate(self.kalman_filter, self.frame_count)
-            activated_stracks.append(track)
+            # centroid of detection (tlwh)
+            x, y, w, h = track.tlwh
+            cx, cy = x + w / 2.0, y + h / 2.0
+            in_edge = self._is_in_edge(cx, cy)
+
+            if in_edge or self.birth_wait == 0:
+                if not in_edge:
+                    # Central births not allowed when birth_wait==0
+                    continue
+                track.activate(self.kalman_filter, self.frame_count)
+                activated_stracks.append(track)
+                continue
+
+            # ----- central candidate handling -----
+            if self.birth_wait > 0:
+                # Quantise centroid to reduce key proliferation
+                key = (int(cx // 10), int(cy // 10))
+                entry = self._birth_candidates.get(key, {"count": 0, "last": self.frame_count})
+                # reset if we skipped frames
+                if self.frame_count - entry["last"] > 1:
+                    entry["count"] = 0
+                entry["count"] += 1
+                entry["last"] = self.frame_count
+                self._birth_candidates[key] = entry
+
+                if entry["count"] >= self.birth_wait:
+                    # allow birth now
+                    track.activate(self.kalman_filter, self.frame_count)
+                    activated_stracks.append(track)
+                    # clear candidate
+                    del self._birth_candidates[key]
 
     def _update_tracks(
         self,
