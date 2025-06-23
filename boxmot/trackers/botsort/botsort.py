@@ -404,7 +404,7 @@ class BotSort(BaseTracker):
                 continue
 
             # centroid of detection (tlwh)
-            x, y, w, h = track.tlwh
+            x, y, w, h = track.xywh
             cx, cy = x + w / 2.0, y + h / 2.0
             in_edge = self._is_in_edge(cx, cy)
 
