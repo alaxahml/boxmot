@@ -232,6 +232,9 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
         # Take the minimum distance for each detection
         min_dist = np.min(dist, axis=0)
 
+        if track.id == 2:
+            print(min_dist)
+
         cost_matrix[i, :] = np.maximum(0.0, min_dist)
 
     return cost_matrix
