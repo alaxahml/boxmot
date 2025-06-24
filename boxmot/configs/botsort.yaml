@@ -30,7 +30,7 @@ proximity_thresh:
 
 appearance_thresh:
   type: uniform
-  default: 0.04  # from the default parameters
+  default: 0.01  # from the default parameters
   range: [0.1, 0.8]
 
 cmc_method:
