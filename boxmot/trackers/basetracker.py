@@ -64,6 +64,9 @@ class BaseTracker(ABC):
             self.max_obs = self.max_age + 5
             print("self.max_obs", self.max_obs)
 
+
+    def reset(self): self.active_tracks = []
+
     @abstractmethod
     def update(self, dets: np.ndarray, img: np.ndarray, embs: np.ndarray = None) -> np.ndarray:
         """
