@@ -39,6 +39,7 @@ TRAINED_URLS = {
     "mobilenetv2_x1_4_dukemtmcreid.pt": "https://drive.google.com/uc?id=12uD5FeVqLg9-AFDju2L7SQxjmPb4zpBN",
     "mobilenetv2_x1_4_msmt17.pt": "https://drive.google.com/uc?id=1ZY5P2Zgm-3RbDpbXM0kIBMPvspeNIbXz",
     # osnet
+
     "osnet_x1_0_soccer1.pt": "https://drive.google.com/uc?id=1wLxa1B74n64kKxKD3b8j-qQDgVGSIsyh",
     "osnet_x1_0_market1501.pt": "https://drive.google.com/uc?id=1vduhq5DpN2q1g4fYEZfPI17MJeh9qyrA",
     "osnet_x1_0_dukemtmcreid.pt": "https://drive.google.com/uc?id=1QZO_4sNf4hdOKKKzKc-TZU9WW1v6zQbq",
@@ -64,6 +65,8 @@ TRAINED_URLS = {
     "clip_duke.pt": "https://drive.google.com/uc?id=1ldjSkj-7pXAWmx8on5x0EftlCaolU4dY",
     "clip_veri.pt": "https://drive.google.com/uc?id=1RyfHdOBI2pan_wIGSim5-l6cM4S2WN8e",
     "clip_vehicleid.pt": "https://drive.google.com/uc?id=168BLegHHxNqatW5wx1YyL2REaThWoof5",
+
+    "bpbreid_hrnetw32.pt": "https://drive.google.com/uc?id=1-m6VX0O8H_2C7aIXp_GEkK4BDv6erY9n",
 }
 
 NR_CLASSES_DICT = {
