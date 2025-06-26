@@ -7,6 +7,7 @@ from boxmot.appearance.reid.config import MODEL_TYPES, NR_CLASSES_DICT, TRAINED_
 from boxmot.appearance.reid.factory import MODEL_FACTORY
 from boxmot.utils import logger as LOGGER
 
+from torchreid import models
 
 class ReIDModelRegistry:
     """Encapsulates model registration and related utilities."""
@@ -91,6 +92,14 @@ class ReIDModelRegistry:
 
             return MODEL_FACTORY[name](
                 cfg, num_class=num_classes, camera_num=2, view_num=1
+            )
+
+        if name == "bpbreid_hrnetw32":
+            return models.build_model(
+                name="hrnet_w32",
+                num_classes=num_classes,
+                pretrained=pretrained,
+                use_gpu=use_gpu,
             )
 
         return MODEL_FACTORY[name](
