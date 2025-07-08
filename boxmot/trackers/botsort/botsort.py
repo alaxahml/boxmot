@@ -128,7 +128,7 @@ class BotSort(BaseTracker):
             dets,
         )
             
-            
+        #print("MATCHES LOST:", matches_lost)
 
         remaining_dets = [detections[i] for i in u_det_lost]
 
@@ -143,6 +143,8 @@ class BotSort(BaseTracker):
             activated_stracks,
             refind_stracks,
         )
+
+        #print("MATCHES ACTIVE:", matches_active)
 
         remaining_dets = [remaining_dets[i] for i in u_det_active]
 
@@ -245,7 +247,7 @@ class BotSort(BaseTracker):
 
 
 
-        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=True, appearance_thresh=0.01, proximity_thresh=0.9)
+        dists_lost = self._calculate_cost_matrix(self.lost_stracks, detections, use_motion=True, appearance_thresh=0.25, proximity_thresh=0.5)
         matches_lost, u_track_lost, u_det_lost_indices = linear_assignment(dists_lost, thresh=self.match_thresh)
         self._update_tracks(matches_lost, self.lost_stracks, detections, activated_stracks, refind_stracks)
         final_unmatched_dets = [detections[i] for i in u_det_lost_indices]

@@ -8,6 +8,10 @@ from boxmot.appearance.reid.factory import MODEL_FACTORY
 from boxmot.utils import logger as LOGGER
 
 from torchreid import models
+from torchreid.scripts.default_config import get_default_config
+
+from pathlib import Path
+
 
 class ReIDModelRegistry:
     """Encapsulates model registration and related utilities."""
@@ -82,6 +86,7 @@ class ReIDModelRegistry:
 
     @staticmethod
     def build_model(name, num_classes, loss="softmax", pretrained=True, use_gpu=True):
+        LOGGER.info(f"build_model got name={name}")
         if name not in MODEL_FACTORY:
             available = list(MODEL_FACTORY.keys())
             raise KeyError(f"Unknown model '{name}'. Must be one of {available}")
@@ -95,11 +100,17 @@ class ReIDModelRegistry:
             )
 
         if name == "bpbreid_hrnetw32":
+            cfg = get_default_config()
+            cfg_path = (Path(__file__).resolve().parent.parent.parent  # .../boxmot
+                / "configs_bpbreid"
+                / "bpbreid_market1501_test.yaml")
+            cfg.merge_from_file(cfg_path)
             return models.build_model(
-                name="hrnet_w32",
+                name="bpbreid",
                 num_classes=num_classes,
                 pretrained=pretrained,
                 use_gpu=use_gpu,
+                config=cfg
             )
 
         return MODEL_FACTORY[name](

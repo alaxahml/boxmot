@@ -63,7 +63,8 @@ def plot_trajectories(predictor):
     for i, result in enumerate(predictor.results):
         tracker = predictor.trackers[i]
         result.orig_img = tracker.plot_results(result.orig_img, predictor.custom_args.show_trajectories)
-        cv2.waitKey(1)
+        #cv2.waitKey(1)
+
 
 
 @torch.no_grad()

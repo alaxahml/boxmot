@@ -78,7 +78,21 @@ class BaseModelBackend:
             crops = self.get_crops(xyxys, img)
             crops = self.inference_preprocess(crops)
             features = self.forward(crops)
-            features = self.inference_postprocess(features)
+            # print("SHAPE", len(features))
+            # print(features.dim())
+            # if features.dim() == 4:                       # (N,256,H,W)
+            #     h_pool = torch.nn.functional.adaptive_avg_pool2d(features, (8, 1))   # (N,256,P,1)
+            #     features = h_pool.permute(0, 2, 1, 3)                  # (N,P,256,1)
+            #     features = features.reshape(features.size(0), -1)      # (N,P*256)
+            if type(features) == tuple:
+                embs = features[0]["parts"]
+                embs = self.inference_postprocess(embs)
+                vis_scores = features[1]["parts"]
+                vis_scores = self.inference_postprocess(vis_scores)
+                return tuple(zip(embs, vis_scores))
+            else:
+                embs = self.inference_postprocess(features)
+                return embs
         else:
             features = np.array([])
         features = features / np.linalg.norm(features, axis=-1, keepdims=True)

@@ -1,6 +1,9 @@
 # =====================================================
 # pyproject.toml for BoxMOT ← UV with GPU by default
 # =====================================================
+[tool.uv]
+#virtualenv = "myenv"          # относительный путь от pyproject.toml
+no-build-isolation-package = ["yolox"]
 
 #######################
 # Alternative Indexes #
@@ -10,6 +13,9 @@
 name     = "torch-cpu"
 url      = "https://download.pytorch.org/whl/cpu"
 explicit = true
+
+
+
 
 
 [[tool.uv.index]]
@@ -41,8 +47,7 @@ name          = "yolox"
 version       = "0.3.0"
 requires-dist = ["onnx>=1.17.0", "onnxsim<1.0.0,>=0.4.36"]
 
-[tool.uv]
-no-build-isolation-package = ["yolox"]
+
 
 
 ############

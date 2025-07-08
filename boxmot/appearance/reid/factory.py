@@ -37,4 +37,5 @@ MODEL_FACTORY = {
     "osnet_ain_x0_25": osnet_ain_x0_25,
     "lmbn_n": LMBN_n,
     "clip": make_model,
+    "bpbreid_hrnetw32":  "", # dummy; see registry.py
 }

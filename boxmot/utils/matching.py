@@ -195,6 +195,23 @@ def embedding_distance(tracks, detections, metric="cosine"):
     )  # Nomalized features
     return cost_matrix
 
+def bpb_distance(track_hist_features, track_hist_vis, det_features, det_visibilities):
+    result = np.ones((track_hist_features.shape[0], det_features.shape[0]))
+
+    for i in range(track_hist_features.shape[0]):     
+        for j in range(det_features.shape[0]):
+
+            a = np.diag(cdist(track_hist_features[i], det_features[j], metric='euclidean'))
+            b = track_hist_vis[i] * det_visibilities[j]
+            if np.sum(b): 
+                result[i, j] = np.dot(a, b) / np.sum(b)
+
+    return result
+
+
+
+
+
 
 def embedding_distance_hist(tracks, detections, metric="cosine"):
     """
@@ -213,29 +230,68 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
     if cost_matrix.size == 0:
         return cost_matrix
 
-    det_features = np.asarray([det.curr_feat for det in detections], dtype=np.float32)
 
-    for i, track in enumerate(tracks):
-        # Use feature history if available, otherwise fall back to smooth_feat
-        if track.features:
-            track_hist_features = np.asarray(list(track.features), dtype=np.float32)
-        elif track.smooth_feat is not None:
-            track_hist_features = track.smooth_feat.reshape(1, -1)
-        else:
-            # No features available for this track, assign max distance
-            cost_matrix[i, :] = 1.0
-            continue
 
-        # Calculate distance from all detections to all features in the history of the current track
-        dist = cdist(track_hist_features, det_features, metric)
+    if type(detections[0].curr_feat) == tuple:
+        det_features = np.asarray([det.curr_feat[0] for det in detections], dtype=np.float32)
+        det_visibilities = np.asarray([det.curr_feat[1] for det in detections], dtype=np.float32)
 
-        # Take the minimum distance for each detection
-        min_dist = np.min(dist, axis=0)
+    
 
-        if track.id == 2:
-            print(np.min(min_dist, axis=0))
+        for i, track in enumerate(tracks):
+            # Use feature history if available, otherwise fall back to smooth_feat
+            if track.features:
+                track_hist_features = np.asarray([feat[0] for feat in list(track.features)], dtype=np.float32)
+                track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)
+            elif track.smooth_feat is not None:
+                track_hist_features = track.smooth_feat.reshape(1, -1)
+            else:
+                # No features available for this track, assign max distance
+                cost_matrix[i, :] = 1.0
+                continue
 
-        cost_matrix[i, :] = np.maximum(0.0, min_dist)
+            
+            # Calculate distance from all detections to all features in the history of the current track
+
+            dist = bpb_distance(track_hist_features, track_hist_vis, det_features, det_visibilities)
+
+
+            # Take the minimum distance for each detection
+            min_dist = np.min(dist, axis=0)
+
+            cost_matrix[i, :] = np.maximum(0.0, min_dist)
+    
+    else:
+        det_features = np.asarray([det.curr_feat for det in detections], dtype=np.float32)
+
+
+    
+
+        for i, track in enumerate(tracks):
+            # Use feature history if available, otherwise fall back to smooth_feat
+            if track.features:
+                track_hist_features = np.asarray([feat for feat in list(track.features)], dtype=np.float32)
+                
+            elif track.smooth_feat is not None:
+                track_hist_features = track.smooth_feat.reshape(1, -1)
+            else:
+                # No features available for this track, assign max distance
+                cost_matrix[i, :] = 1.0
+                continue
+
+            
+            # Calculate distance from all detections to all features in the history of the current track
+
+            dist = cdist(track_hist_features, det_features, metric)
+
+            # Take the minimum distance for each detection
+            min_dist = np.min(dist, axis=0)
+
+            if track.id == 2:
+                print("DIST", min_dist)
+
+            cost_matrix[i, :] = np.maximum(0.0, min_dist)
+
 
     return cost_matrix
 

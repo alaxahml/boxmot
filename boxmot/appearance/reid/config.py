@@ -13,6 +13,7 @@ MODEL_TYPES = [
     "osnet_ain_x1_0",
     "lmbn_n",
     "clip",
+    "bpbreid_hrnetw32", #dummy
 ]
 
 TRAINED_URLS = {
