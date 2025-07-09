@@ -313,7 +313,7 @@ class BotSort(BaseTracker):
             # Combine motion and appearance
             ious_dists = iou_distance(tracks, detections)
             if self.with_reid:
-                emb_dists = embedding_distance_hist(tracks, detections)
+                emb_dists = embedding_distance_hist(tracks, detections) / 2.0
                 
                 emb_dists[emb_dists > appearance_thresh] = 1.0
                 ious_dists_mask = ious_dists > proximity_thresh

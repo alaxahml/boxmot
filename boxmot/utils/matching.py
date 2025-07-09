@@ -201,7 +201,7 @@ def bpb_distance(track_hist_features, track_hist_vis, det_features, det_visibili
     for i in range(track_hist_features.shape[0]):     
         for j in range(det_features.shape[0]):
 
-            a = np.diag(cdist(track_hist_features[i], det_features[j], metric='euclidean'))
+            a = np.diag(cdist(track_hist_features[i], det_features[j], metric='cosine'))
             b = track_hist_vis[i] * det_visibilities[j]
             if np.sum(b): 
                 result[i, j] = np.dot(a, b) / np.sum(b)
@@ -259,6 +259,9 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
             # Take the minimum distance for each detection
             min_dist = np.min(dist, axis=0)
 
+            if track.id == 2:
+                print("DIST_tuple", min_dist)
+                
             cost_matrix[i, :] = np.maximum(0.0, min_dist)
     
     else:
