@@ -9,7 +9,7 @@ data:
 model:
   name: 'bpbreid'
   load_weights: 'bpbreid_hrnetw32.pt'
-  pretrained: False
+  pretrained: True
   load_config: True
   bpbreid:
     mask_filtering_training: False
