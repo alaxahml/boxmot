@@ -91,6 +91,7 @@ class BaseModelBackend:
                 vis_scores = features[1]["parts"]
                 vis_scores = self.inference_postprocess(vis_scores)
                 print("VIS shape", vis_scores.shape)
+                print("EMBS shape", embs.shape)
                 return tuple(zip(embs, vis_scores))
             else:
                 embs = self.inference_postprocess(features)
