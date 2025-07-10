@@ -260,7 +260,7 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
             min_dist = np.min(dist, axis=0)
 
             if track.id == 2:
-                print("DIST_tuple", min_dist)
+                print("TRACK VISIBILITY", track_hist_vis)
                 
             cost_matrix[i, :] = np.maximum(0.0, min_dist)
     
