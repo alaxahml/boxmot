@@ -1,4 +1,4 @@
-efrom collections import deque
+from collections import deque
 
 import numpy as np
 
