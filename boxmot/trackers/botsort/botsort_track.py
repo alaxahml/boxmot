@@ -44,7 +44,7 @@ class STrack(BaseTrack):
             vis = feat[1]
             feat = feat[0]
 
-            feat /= np.linalg.norm(feat, axis=-1)
+            feat /= np.linalg.norm(feat, axis=-1).reshape(feat.shape[0], 1)
 
 
             self.curr_feat = (feat, vis)
