@@ -1,4 +1,4 @@
-from collections import deque
+efrom collections import deque
 
 import numpy as np
 
@@ -43,8 +43,8 @@ class STrack(BaseTrack):
         if type(feat) == tuple: 
             vis = feat[1]
             feat = feat[0]
-
-            feat /= np.linalg.norm(feat, axis=-1).reshape(feat.shape[0], 1)
+            norm = np.linalg.norm(feat, axis=-1).reshape(feat.shape[0], 1)
+            feat /= norm
 
 
             self.curr_feat = (feat, vis)
