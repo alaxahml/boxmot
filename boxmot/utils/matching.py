@@ -259,7 +259,7 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
             # Take the minimum distance for each detection
             min_dist = np.min(dist, axis=0)
 
-            if track.id == 2:
+            #if track.id == 2:
                # print("TRACK VISIBILITY", track_hist_vis[-1])
                # print("SHAPE", track_hist_vis[-1].shape)
                 
