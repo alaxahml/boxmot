@@ -21,6 +21,7 @@ class BaseModelBackend:
         self.download_model(self.weights)
         self.model_name = ReIDModelRegistry.get_model_name(self.weights)
 
+        print("WEIGHTS", self.weights)
         self.model = ReIDModelRegistry.build_model(
             self.model_name,
             num_classes=ReIDModelRegistry.get_nr_classes(self.weights),
