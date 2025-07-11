@@ -45,7 +45,7 @@ class ReIDModelRegistry:
         )
         state_dict = checkpoint.get("state_dict", checkpoint)
         model_dict = model.state_dict()
-        print("STAET_DICT", state_dict)
+
         if "lmbn" in weight_path.parts:
             model.load_state_dict(model_dict, strict=True)
         else:
@@ -68,6 +68,7 @@ class ReIDModelRegistry:
                 )
             else:
                 LOGGER.success(f"Loaded pretrained weights from {weight_path}")
+                print(f"Loaded pretrained weights from {weight_path}")
 
             if discarded_layers:
                 LOGGER.debug(
