@@ -28,6 +28,7 @@ class BaseModelBackend:
             use_gpu=device,
         )
         self.checker = RequirementsChecker()
+        print("MODEL WEIGHTS," self.weights)
         self.load_model(self.weights)
         self.input_shape = (384, 128) if "lmbn" in self.model_name else (256, 128)
 
