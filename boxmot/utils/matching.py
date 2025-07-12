@@ -244,7 +244,8 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
             #     track_hist_features = np.asarray([feat[0] for feat in list(track.features)], dtype=np.float32)
             #     track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)
             if track.smooth_feat is not None:
-                track_hist_features = track.smooth_feat.reshape(1, 1, -1)
+                track_hist_features = track.smooth_feat
+                track_hist_features = track_hist_features.reshape(1, 1, -1)
                 track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)
                 print("FEAT SHAPE",track_hist_features.shape)
                 print("VIS SHAPE",track_hist_vis.shape)
