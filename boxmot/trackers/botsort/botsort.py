@@ -326,12 +326,12 @@ class BotSort(BaseTracker):
                 alpha = 0.1
                 beta = 0.9
                 emb_dists = embedding_distance_hist(tracks, detections) / 2.0
-                res_matrix = alpha*emb_dists + beta*ious_dists
-                return res_matrix
-                # emb_dists[emb_dists > appearance_thresh] = 1.0
-                # ious_dists_mask = ious_dists > proximity_thresh
-                # emb_dists[ious_dists_mask] = 1.0
-                # return np.minimum(ious_dists, emb_dists)
+                # res_matrix = alpha*emb_dists + beta*ious_dists
+                # return res_matrix
+                emb_dists[emb_dists > appearance_thresh] = 1.0
+                ious_dists_mask = ious_dists > proximity_thresh
+                #emb_dists[ious_dists_mask] = 1.0
+                return np.minimum(ious_dists, emb_dists)
             return ious_dists
         else:  # Appearance only
             if self.with_reid:
