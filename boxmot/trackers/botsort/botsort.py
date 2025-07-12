@@ -214,6 +214,15 @@ class BotSort(BaseTracker):
         # STrack.multi_gmc(active_tracks, warp)
         # STrack.multi_gmc(unconfirmed, warp)
         # STrack.multi_gmc(self.lost_stracks, warp)
+        
+        STrack.multi_predict(active_tracks)
+        #STrack.multi_predict(unconfirmed)
+        STrack.multi_predict(self.lost_stracks)
+    
+        warp = self.cmc.apply(img, dets)
+        STrack.multi_gmc(active_tracks, warp)
+        STrack.multi_gmc(unconfirmed, warp)
+        STrack.multi_gmc(self.lost_stracks, warp)
 
         # # --- STAGE 1: Associate Active Tracks (Motion + Appearance) ---
         # STrack.multi_predict(active_tracks)
@@ -237,14 +246,14 @@ class BotSort(BaseTracker):
  
 
         # Fix camera motion
-        STrack.multi_predict(active_tracks)
-        #STrack.multi_predict(unconfirmed)
-        STrack.multi_predict(self.lost_stracks)
+        # STrack.multi_predict(active_tracks)
+        # #STrack.multi_predict(unconfirmed)
+        # STrack.multi_predict(self.lost_stracks)
     
-        warp = self.cmc.apply(img, dets)
-        STrack.multi_gmc(active_tracks, warp)
-        STrack.multi_gmc(unconfirmed, warp)
-        STrack.multi_gmc(self.lost_stracks, warp)
+        # warp = self.cmc.apply(img, dets)
+        # STrack.multi_gmc(active_tracks, warp)
+        # STrack.multi_gmc(unconfirmed, warp)
+        # STrack.multi_gmc(self.lost_stracks, warp)
 
 
 
