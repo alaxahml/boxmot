@@ -22,6 +22,7 @@ from boxmot.utils.matching import (
     fuse_score,
     iou_distance,
     linear_assignment,
+    ious,
 )
 
 
@@ -367,10 +368,17 @@ class BotSort(BaseTracker):
     def _create_detections(self, dets, features, with_reid=True):
         if len(dets) > 0:
             if self.with_reid and with_reid:
-                return [
-                    STrack(det, f, max_obs=self.max_obs)
-                    for (det, f) in zip(dets, features)
-                ]
+                dets_objects = []
+                for det in dets:
+                    iou_row = ious(det[np.newaxis, :4], dets[:, :4])  #  shape (1, N)
+                    max_iou = iou_row.max()    
+                    if max_iou > 0.6:
+                        dets_objects.append(det)
+                return [STrack(det, f, max_obs=self.max_obs) for (det, f) in zip(dets_objects, features)]
+                # return [
+                #     STrack(det, f, max_obs=self.max_obs)
+                #     for (det, f) in zip(dets, features)
+                # ] 
             else:
                 return [STrack(det, max_obs=self.max_obs) for det in dets]
         return []

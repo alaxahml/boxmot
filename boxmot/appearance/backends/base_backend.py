@@ -88,7 +88,7 @@ class BaseModelBackend:
             if type(features) == tuple:
                 embs = features[0]["parts"]
                 embs = self.inference_postprocess(embs)
-                embs = embs / np.linalg.norm(embs, axis=-1, keepdims=True)
+                #embs = embs / np.linalg.norm(embs, axis=-1, keepdims=True)
                 vis_scores = features[1]["parts"]
                 vis_scores = self.inference_postprocess(vis_scores)
                 #print("VIS shape", vis_scores.shape)

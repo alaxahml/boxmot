@@ -84,7 +84,7 @@ def ious(atlbrs, btlbrs):
     if ious.size == 0:
         return ious
 
-    ious = bbox_ious(
+    ious = AssociationFunction.iou_batch(
         np.ascontiguousarray(atlbrs, dtype=np.float32),
         np.ascontiguousarray(btlbrs, dtype=np.float32),
     )
@@ -240,17 +240,20 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
 
         for i, track in enumerate(tracks):
             # Use feature history if available, otherwise fall back to smooth_feat
-            # if track.features:
-            #     track_hist_features = np.asarray([feat[0] for feat in list(track.features)], dtype=np.float32)
-            #     track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)
-            if track.smooth_feat is not None:
+            if track.features:
+                print("IN NO SMOOTH")
+                track_hist_features = np.asarray([feat[0] for feat in list(track.features)], dtype=np.float32)
+                track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)
+            elif track.smooth_feat is not None:
+                print("IN SMOOTH")
                 track_hist_features = track.smooth_feat
                 track_hist_features = np.expand_dims(track_hist_features, axis=0)
                 #track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)
+            
                 track_hist_vis = list(track.features)[-1][1]
-                track_hist_vis = np.expand_dims(track_hist_vis,axis=0)
-                print("SMOOTH FEAT SHAPE",track_hist_features.shape)
-                print("VIS SHAPE",track_hist_vis.shape)
+                track_hist_vis = np.expand_dims(track_hist_vis, axis=0)
+                # print("SMOOTH FEAT SHAPE",track_hist_features.shape)
+                # print("VIS SHAPE",track_hist_vis.shape)
             else:
                 # No features available for this track, assign max distance
                 cost_matrix[i, :] = 1.0
@@ -265,10 +268,12 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
             # Take the minimum distance for each detection
             min_dist = np.min(dist, axis=0)
 
-            if track.id == 2:
+            #if track.id == 2:
+
                #print("TRACK VISIBILITY", track_hist_vis[-1])
                #print("SHAPE", track_hist_vis[-1].shape)
-                print("DIST", min_dist)
+                # print("MIN_DIST", min_dist)
+                # print("DIST", dist)
                 
             cost_matrix[i, :] = np.maximum(0.0, min_dist)
     

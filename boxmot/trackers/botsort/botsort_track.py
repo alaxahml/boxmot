@@ -43,18 +43,22 @@ class STrack(BaseTrack):
         if type(feat) == tuple: 
             vis = feat[1]
             feat = feat[0]
-            norm = np.linalg.norm(feat, axis=-1).reshape(feat.shape[0], 1)
-            feat /= norm
+            #print("FEAT BEFORE NORM", feat)
+            feat /= np.linalg.norm(feat, axis=-1, keepdims=True)
+            #norm = np.linalg.norm(feat, axis=-1).reshape(feat.shape[0], 1)
+            #feat /= norm
+            #print("FEAT AFTER NORM", feat)
 
-            print("UPDATE FEAT SHAPE", feat.shape)
-            print("UPDATE VIS SHAPE", vis.shape)
             self.curr_feat = (feat, vis)
             if self.smooth_feat is None:
                  self.smooth_feat = feat
             else:
                  self.smooth_feat = self.alpha * self.smooth_feat + (1 - self.alpha) * feat
-            norm = np.linalg.norm(self.smooth_feat, axis=-1).reshape(self.smooth_feat.shape[0], 1)
-            self.smooth_feat /= norm
+                
+            self.smooth_feat /= np.linalg.norm(self.smooth_feat, axis=-1, keepdims=True)
+            # norm = np.linalg.norm(self.smooth_feat, axis=-1).reshape(self.smooth_feat.shape[0], 1)
+
+            # self.smooth_feat /= norm
             self.features.append((feat, vis))
 
         else: 
