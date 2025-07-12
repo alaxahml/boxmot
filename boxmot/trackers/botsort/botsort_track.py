@@ -48,11 +48,12 @@ class STrack(BaseTrack):
 
 
             self.curr_feat = (feat, vis)
-            # if self.smooth_feat is None:
-            #      self.smooth_feat = feat
-            # else:
-            #      self.smooth_feat = self.alpha * self.smooth_feat + (1 - self.alpha) * feat
-            # self.smooth_feat /= np.linalg.norm(self.smooth_feat, axis=-1)
+            if self.smooth_feat is None:
+                 self.smooth_feat = feat
+            else:
+                 self.smooth_feat = self.alpha * self.smooth_feat + (1 - self.alpha) * feat
+            norm = np.linalg.norm(self.smooth_feat, axis=-1).reshape(self.smooth_feat.shape[0], 1)
+            self.smooth_feat /= norm
             self.features.append((feat, vis))
 
         else: 
