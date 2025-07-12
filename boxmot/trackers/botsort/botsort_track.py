@@ -46,7 +46,8 @@ class STrack(BaseTrack):
             norm = np.linalg.norm(feat, axis=-1).reshape(feat.shape[0], 1)
             feat /= norm
 
-
+            print("UPDATE FEAT SHAPE", feat.shape)
+            print("UPDATE VIS SHAPE", vis.shape)
             self.curr_feat = (feat, vis)
             if self.smooth_feat is None:
                  self.smooth_feat = feat
