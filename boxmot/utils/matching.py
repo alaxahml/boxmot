@@ -247,7 +247,7 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
                 track_hist_features = track.smooth_feat
                 track_hist_features = np.expand_dims(track_hist_features, axis=0)
                 track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)
-                print("FEAT SHAPE",track_hist_features.shape)
+                print("SMOOTH FEAT SHAPE",track_hist_features.shape)
                 print("VIS SHAPE",track_hist_vis.shape)
             else:
                 # No features available for this track, assign max distance
