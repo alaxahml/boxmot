@@ -20,7 +20,7 @@ model:
     masks:
       dir: 'pifpaf_maskrcnn_filtering'
       preprocess: 'five_v'
-      parts_num:  1 
+      parts_num:  4 
 
 test:
   evaluate: True
