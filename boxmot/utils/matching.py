@@ -246,6 +246,8 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
             if track.smooth_feat is not None:
                 track_hist_features = track.smooth_feat.reshape(1, -1)
                 track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)
+                print(track_hist_features.shape)
+                print(track_hist_vis.shape)
             else:
                 # No features available for this track, assign max distance
                 cost_matrix[i, :] = 1.0
