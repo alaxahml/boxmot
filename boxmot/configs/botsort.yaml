@@ -25,12 +25,12 @@ match_thresh:
 
 proximity_thresh:
   type: uniform
-  default: 0.75  # from the default parameters
+  default: 0.5  # from the default parameters
   range: [0.25, 0.75]
 
 appearance_thresh:
   type: uniform
-  default: 0.1  # from the default parameters
+  default: 0.25  # from the default parameters
   range: [0.1, 0.8]
 
 cmc_method:
