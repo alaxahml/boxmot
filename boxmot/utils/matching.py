@@ -241,11 +241,9 @@ def embedding_distance_hist(tracks, detections, metric="cosine"):
         for i, track in enumerate(tracks):
             # Use feature history if available, otherwise fall back to smooth_feat
             if track.features:
-                print("IN NO SMOOTH")
                 track_hist_features = np.asarray([feat[0] for feat in list(track.features)], dtype=np.float32)
                 track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)
             elif track.smooth_feat is not None:
-                print("IN SMOOTH")
                 track_hist_features = track.smooth_feat
                 track_hist_features = np.expand_dims(track_hist_features, axis=0)
                 #track_hist_vis = np.asarray([feat[1] for feat in list(track.features)], dtype=np.float32)

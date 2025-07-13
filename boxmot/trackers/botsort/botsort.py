@@ -368,17 +368,22 @@ class BotSort(BaseTracker):
     def _create_detections(self, dets, features, with_reid=True):
         if len(dets) > 0:
             if self.with_reid and with_reid:
-                dets_objects = []
-                for det in dets:
-                    iou_row = ious(det[np.newaxis, :4], dets[:, :4])  #  shape (1, N)
-                    max_iou = iou_row.max()    
-                    if max_iou > 0.6:
-                        dets_objects.append(det)
-                return [STrack(det, f, max_obs=self.max_obs) for (det, f) in zip(dets_objects, features)]
-                # return [
-                #     STrack(det, f, max_obs=self.max_obs)
-                #     for (det, f) in zip(dets, features)
-                # ] 
+                dets_filtered = []
+                features_filtered = []
+                # for i in range(dets.shape[0]):
+                #     iou_row = ious(dets[i][np.newaxis, :4], dets[:, :4]) 
+                #     #print(iou_row)
+                #     iou_row[0][i] = 0 
+                #     max_iou = iou_row.max()  
+                #     print(max_iou)  
+                #     if max_iou < 0.5:
+                #         dets_filtered.append(dets[i])
+                #         features_filtered.append(features[i])
+                # return [STrack(det, f, max_obs=self.max_obs) for (det, f) in zip(dets_filtered, features_filtered)]
+                return [
+                    STrack(det, f, max_obs=self.max_obs)
+                    for (det, f) in zip(dets, features)
+                ] 
             else:
                 return [STrack(det, max_obs=self.max_obs) for det in dets]
         return []
