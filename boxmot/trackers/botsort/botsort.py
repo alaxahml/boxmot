@@ -322,6 +322,7 @@ class BotSort(BaseTracker):
                 
                 ious_dists_mask = ious_dists > proximity_thresh
                 equal_matrix[ious_dists_mask] = 1.0
+                print(equal_matrix)
                 return np.minimum(ious_dists, equal_matrix)
             return ious_dists
         else:  # Appearance only
