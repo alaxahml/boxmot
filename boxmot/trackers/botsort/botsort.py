@@ -16,6 +16,7 @@ from boxmot.trackers.botsort.botsort_utils import (
     joint_stracks,
     remove_duplicate_stracks,
     sub_stracks,
+    load_kmeans,
 )
 from boxmot.utils.matching import (
     embedding_distance_hist,
@@ -311,11 +312,14 @@ class BotSort(BaseTracker):
             # Combine motion and appearance
             ious_dists = iou_distance(tracks, detections)
             if self.with_reid:
-                emb_dists = embedding_distance_hist(tracks, detections)
+                #emb_dists = embedding_distance_hist(tracks, detections)
+                equal_matrix = embedding_distancet(tracks, detections, kmeans=kmeans)
+                equal_matrix[equal_matrix == True] = 0.25
+                equal_matrix[equal_matrix == False] = 0.5
+                #emb_dists[emb_dists > appearance_thresh] = 1.0
                 
-                emb_dists[emb_dists > appearance_thresh] = 1.0
                 ious_dists_mask = ious_dists > proximity_thresh
-                emb_dists[ious_dists_mask] = 1.0
+                equal_matrix[ious_dists_mask] = 1.0
                 return np.minimum(ious_dists, emb_dists)
             return ious_dists
         else:  # Appearance only
