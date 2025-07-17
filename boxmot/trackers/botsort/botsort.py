@@ -312,6 +312,7 @@ class BotSort(BaseTracker):
             # Combine motion and appearance
             ious_dists = iou_distance(tracks, detections)
             if self.with_reid:
+                kmeans = load_kmeans()
                 #emb_dists = embedding_distance_hist(tracks, detections)
                 equal_matrix = embedding_distancet(tracks, detections, kmeans=kmeans)
                 equal_matrix[equal_matrix == True] = 0.25
