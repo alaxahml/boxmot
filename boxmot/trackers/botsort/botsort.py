@@ -316,14 +316,14 @@ class BotSort(BaseTracker):
                 kmeans = load_kmeans()
                 #emb_dists = embedding_distance_hist(tracks, detections)
                 equal_matrix = embedding_distance(tracks, detections, kmeans=kmeans)
-                print("AFTER EMBEDDING_DIST", equal_matrix)
+                #print("AFTER EMBEDDING_DIST", equal_matrix)
                 equal_matrix[equal_matrix == True] = 0.25
                 equal_matrix[equal_matrix == False] = 0.5
                 #emb_dists[emb_dists > appearance_thresh] = 1.0
                 
                 ious_dists_mask = ious_dists > proximity_thresh
                 equal_matrix[ious_dists_mask] = 1.0
-                print("AFTER LOGIC", equal_matrix)
+                #print("AFTER LOGIC", equal_matrix)
                 return np.minimum(ious_dists, equal_matrix)
             return ious_dists
         else:  # Appearance only
