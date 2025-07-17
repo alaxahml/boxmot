@@ -9,7 +9,7 @@ from boxmot.utils.matching import iou_distance
 import pickle
 
 def load_kmeans():
-    with open('kmeans.pkl', 'rb') as f:
+    with open('../../kmeans.pkl', 'rb') as f:
         kmeans = pickle.load(f)
     return kmeans
     
