@@ -20,6 +20,7 @@ from boxmot.trackers.botsort.botsort_utils import (
 )
 from boxmot.utils.matching import (
     embedding_distance_hist,
+    embedding_distance,
     fuse_score,
     iou_distance,
     linear_assignment,
