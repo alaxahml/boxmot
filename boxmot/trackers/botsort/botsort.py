@@ -317,8 +317,8 @@ class BotSort(BaseTracker):
                 #emb_dists = embedding_distance_hist(tracks, detections)
                 equal_matrix = embedding_distance(tracks, detections, kmeans=kmeans)
                 #print("AFTER EMBEDDING_DIST", equal_matrix)
-                equal_matrix[equal_matrix == True] = 0.25
-                equal_matrix[equal_matrix == False] = 0.5
+                equal_matrix[equal_matrix == 1.0] = 0.25
+                equal_matrix[equal_matrix == 0.0] = 0.5
                 print("AFTER LOGIC", equal_matrix)
                 #emb_dists[emb_dists > appearance_thresh] = 1.0
                 
