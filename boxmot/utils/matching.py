@@ -195,7 +195,7 @@ def embedding_distance(tracks, detections, kmeans, metric="cosine"):
     track_clusters = kmeans.predict(track_features)
     print("DET_CLUSTERS", det_clusters)
     print("TRACK_CLUSTERS", track_clusters)
-    equal_matrix = np.equal(track_clusters[:, None], det_clusters[None, :])
+    equal_matrix = np.equal(track_clusters[:, None], det_clusters[None, :]).astype(int)
     print("MATRIX", equal_matrix)
     
     # cost_matrix = np.maximum(
