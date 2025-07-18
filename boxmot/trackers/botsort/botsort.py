@@ -319,12 +319,13 @@ class BotSort(BaseTracker):
                 #print("AFTER EMBEDDING_DIST", equal_matrix)
                 equal_matrix[equal_matrix == 1.0] = 0.25
                 equal_matrix[equal_matrix == 0.0] = 0.5
-                print("AFTER LOGIC", equal_matrix)
+                #print("AFTER LOGIC", equal_matrix)
                 #emb_dists[emb_dists > appearance_thresh] = 1.0
                 
                 ious_dists_mask = ious_dists > proximity_thresh
                 equal_matrix[ious_dists_mask] = 1.0
                 #print("AFTER LOGIC", equal_matrix)
+                print("FINAL_MATRIX", np.minimum(ious_dists, equal_matrix))
                 return np.minimum(ious_dists, equal_matrix)
             return ious_dists
         else:  # Appearance only
