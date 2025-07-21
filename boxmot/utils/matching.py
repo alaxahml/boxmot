@@ -187,16 +187,16 @@ def embedding_distance(tracks, detections, kmeans, metric="cosine"):
     )
     # for i, track in enumerate(tracks):
     # cost_matrix[i, :] = np.maximum(0.0, cdist(track.smooth_feat.reshape(1,-1), det_features, metric))
-    track_features = np.asarray(
-        [track.smooth_feat for track in tracks], dtype=np.float32
-    )
+    # track_features = np.asarray(
+    #     [track.smooth_feat for track in tracks], dtype=np.float32
+    # )
     
     det_clusters = kmeans.predict(det_features)
-    track_clusters = kmeans.predict(track_features)
+    track_clusters = np.array([track.id for track in tracks])
     print("DET_CLUSTERS", det_clusters)
     print("TRACK_CLUSTERS", track_clusters)
     equal_matrix = np.equal(track_clusters[:, None], det_clusters[None, :]).astype(float)
-    print("MATRIX", equal_matrix)
+    #print("MATRIX", equal_matrix)
     
     # cost_matrix = np.maximum(
     #     0.0, cdist(track_features, det_features, metric)

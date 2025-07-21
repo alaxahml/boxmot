@@ -10,7 +10,7 @@ from boxmot.utils.ops import xywh2xyxy, xyxy2xywh
 class STrack(BaseTrack):
     shared_kalman = KalmanFilterXYWH()
 
-    def __init__(self, det, feat=None, feat_history=50, max_obs=50):
+    def __init__(self, det, feat=None, feat_history=50, max_obs=600):
         # Initialize detection parameters
         self.xywh = xyxy2xywh(det[:4])  # Convert to (xc, yc, w, h)
         self.conf = det[4]
@@ -103,10 +103,10 @@ class STrack(BaseTrack):
             st.mean = mean
             st.covariance = R8x8.dot(st.covariance).dot(R8x8.T)
 
-    def activate(self, kalman_filter, frame_id):
+    def activate(self, kalman_filter, frame_id, box_class):
         """Activate a new track."""
         self.kalman_filter = kalman_filter
-        self.id = self.next_id()
+        self.id = box_class
         self.mean, self.covariance = self.kalman_filter.initiate(self.xywh)
         self.tracklet_len = 0
         self.state = TrackState.Tracked

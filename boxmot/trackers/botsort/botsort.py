@@ -6,6 +6,9 @@ from selectors import DefaultSelector
 import numpy as np
 import torch
 
+
+from scipy.optimize import linear_sum_assignment
+
 from boxmot.appearance.reid.auto_backend import ReidAutoBackend
 from boxmot.motion.cmc import get_cmc_method
 from boxmot.motion.kalman_filters.aabb.xywh_kf import KalmanFilterXYWH
@@ -90,6 +93,9 @@ class BotSort(BaseTracker):
             self.model = ReidAutoBackend(
                 weights=reid_weights, device=device, half=half
             ).model
+
+
+        self.kmeans = load_kmeans()
 
         self.cmc = get_cmc_method(cmc_method)()
         self.fuse_first_associate = fuse_first_associate
@@ -179,12 +185,12 @@ class BotSort(BaseTracker):
             removed_stracks,
         )
         
-
-        self._initialize_new_tracks(
-            final_unmatched_dets,
-            activated_stracks,
-            detections,
-        )
+        if self.frame_count == 1:
+            self._initialize_new_tracks(
+                final_unmatched_dets,
+                activated_stracks,
+                detections,
+            )
 
         # Update track states (e.g., remove old lost tracks)
         self._update_track_states(lost_stracks, removed_stracks)
@@ -216,7 +222,7 @@ class BotSort(BaseTracker):
 
         # # --- STAGE 1: Associate Active Tracks (Motion + Appearance) ---
         # STrack.multi_predict(active_tracks)
-        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True, appearance_thresh=self.appearance_thresh, proximity_thresh=self.proximity_thresh)
+        dists = self._calculate_cost_matrix(active_tracks, detections, use_motion=True, appearance_thresh=self.appearance_thresh, proximity_thresh=self.proximity_thresh, lost_flag=False)
         matches_active, u_track_active, u_det_active = linear_assignment(dists, thresh=self.match_thresh)
         self._update_tracks(matches_active, active_tracks, detections, activated_stracks, refind_stracks)
 
@@ -305,28 +311,35 @@ class BotSort(BaseTracker):
         return final_unmatched_dets
         
     
-    def _calculate_cost_matrix(self, tracks, detections, use_motion: bool, appearance_thresh, proximity_thresh):
+    def _calculate_cost_matrix(self, tracks, detections, use_motion: bool, appearance_thresh, proximity_thresh, lost_flag=True):
         if not tracks or not detections:
             return np.empty((len(tracks), len(detections)))
 
         if use_motion:
             # Combine motion and appearance
             ious_dists = iou_distance(tracks, detections)
-            if self.with_reid:
-                kmeans = load_kmeans()
+            if lost_flag:
                 #emb_dists = embedding_distance_hist(tracks, detections)
-                equal_matrix = embedding_distance(tracks, detections, kmeans=kmeans)
+                equal_matrix = embedding_distance(tracks, detections, kmeans=self.kmeans)
+                
                 #print("AFTER EMBEDDING_DIST", equal_matrix)
-                equal_matrix[equal_matrix == 1.0] = 0.25
-                equal_matrix[equal_matrix == 0.0] = 1
+                # equal_matrix[equal_matrix == 1.0] = 0.25
+                # equal_matrix[equal_matrix == 0.0] = 1
                 #print("AFTER LOGIC", equal_matrix)
                 #emb_dists[emb_dists > appearance_thresh] = 1.0
+
+                eq_distance_mask = equal_matrix == 0.0
                 
-                ious_dists_mask = ious_dists > proximity_thresh
-                equal_matrix[ious_dists_mask] = 1.0
+                #ious_dists_mask = ious_dists > proximity_thresh
+                #equal_matrix[ious_dists_mask] = 1.0
+                print("IOUS_BEFORE", ious_dists)
+                ious_dists[eq_distance_mask] = 1
+                print("IOUS", ious_dists)
                 #print("AFTER LOGIC", equal_matrix)
-                print("FINAL_MATRIX", np.minimum(ious_dists, equal_matrix))
-                return np.minimum(ious_dists, equal_matrix)
+                #print("FINAL_MATRIX", np.minimum(ious_dists, equal_matrix))
+                #return np.minimum(ious_dists, equal_matrix)
+                return ious_dists
+            
             return ious_dists
         else:  # Appearance only
             if self.with_reid:
@@ -379,14 +392,28 @@ class BotSort(BaseTracker):
                 active_tracks.append(track)
         return unconfirmed, active_tracks
 
+
     def _initialize_new_tracks(self, u_detections, activated_stracks, detections):
-        for track in u_detections:
+        
+        centroids = self.kmeans.cluster_centers_
+
+        det_features = np.asarray(
+            [track.curr_feat for track in u_detections], dtype=np.float32
+        )
+        distance_matrix = np.linalg.norm(det_features[:, np.newaxis, :] - centroids[np.newaxis, :, :], axis=2)  
+        row_ind, col_ind = linear_sum_assignment(distance_matrix)
+
+        for ind in range(col_ind.shape[0]):
             #track = detections[inew]
-            if track.conf < self.new_track_thresh:
+            if u_detections[row_ind[ind]].conf < self.new_track_thresh:
                 continue
 
-            track.activate(self.kalman_filter, self.frame_count)
-            activated_stracks.append(track)
+            box_class = col_ind[ind]
+
+
+            
+            u_detections[row_ind[ind]].activate(self.kalman_filter, self.frame_count, box_class)
+            activated_stracks.append(u_detections[row_ind[ind]])
 
     def _update_tracks(
         self,
