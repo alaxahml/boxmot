@@ -126,33 +126,31 @@ class BotSort(BaseTracker):
         unconfirmed, active_tracks = self._separate_tracks()
 
         #final_unmatched_dets, unmatched_lost_tracks_indices
-        matches_lost, u_track_lost, u_det_lost = self._lost_association(
-            activated_stracks,
-            refind_stracks,
-            detections,
-            active_tracks,
-            unconfirmed,
-            img,
-            dets,
-        )
-            
-            
-
-        remaining_dets = [detections[i] for i in u_det_lost]
-
-        
-        # First association
         matches_active, u_track_active, u_det_active = self._first_association(
             dets,
             active_tracks,
             unconfirmed, 
             img,
-            remaining_dets,
+            detections,
             activated_stracks,
             refind_stracks,
         )
 
-        remaining_dets = [remaining_dets[i] for i in u_det_active]
+        #print("MATCHES ACTIVE:", matches_active)
+
+        remaining_dets = [detections[i] for i in u_det_active]
+
+        matches_lost, u_track_lost, u_det_lost = self._lost_association(
+            activated_stracks,
+            refind_stracks,
+            remaining_dets,
+            active_tracks,
+            unconfirmed,
+            img,
+            dets,
+        )
+
+        remaining_dets = [remaining_dets[i] for i in u_det_lost]
 
 
         # final_unmatched_dets, unmatched_lost_tracks_indices = self._lost_association(
