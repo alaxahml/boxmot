@@ -193,8 +193,8 @@ def embedding_distance(tracks, detections, kmeans, metric="cosine"):
     
     det_clusters = kmeans.predict(det_features)
     track_clusters = np.array([track.id for track in tracks])
-    print("DET_CLUSTERS", det_clusters)
-    print("TRACK_CLUSTERS", track_clusters)
+    #print("DET_CLUSTERS", det_clusters)
+    #print("TRACK_CLUSTERS", track_clusters)
     equal_matrix = np.equal(track_clusters[:, None], det_clusters[None, :]).astype(float)
     #print("MATRIX", equal_matrix)
     

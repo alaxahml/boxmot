@@ -183,12 +183,15 @@ class BotSort(BaseTracker):
             removed_stracks,
         )
         
-        if self.frame_count == 1:
-            self._initialize_new_tracks(
-                final_unmatched_dets,
-                activated_stracks,
-                detections,
-            )
+
+        #print("ACTIVATED TRACKS BEFORE LEN", len(activated_stracks))
+        self._initialize_new_tracks(
+            final_unmatched_dets,
+            activated_stracks,
+            detections,
+        )
+
+        #print("ACTIVATED TRACKS AFTER LEN", len(activated_stracks))
 
         # Update track states (e.g., remove old lost tracks)
         self._update_track_states(lost_stracks, removed_stracks)
@@ -330,9 +333,9 @@ class BotSort(BaseTracker):
                 
                 #ious_dists_mask = ious_dists > proximity_thresh
                 #equal_matrix[ious_dists_mask] = 1.0
-                print("IOUS_BEFORE", ious_dists)
+                #print("IOUS_BEFORE", ious_dists)
                 ious_dists[eq_distance_mask] = 1
-                print("IOUS", ious_dists)
+                #print("IOUS", ious_dists)
                 #print("AFTER LOGIC", equal_matrix)
                 #print("FINAL_MATRIX", np.minimum(ious_dists, equal_matrix))
                 #return np.minimum(ious_dists, equal_matrix)
@@ -395,23 +398,37 @@ class BotSort(BaseTracker):
         
         centroids = self.kmeans.cluster_centers_
 
+        if self.frame_count != 1:
+            used_ids = [track.id for track in activated_stracks]    
+            remaining_ids = [i for i in range(self.kmeans.n_clusters) if i not in used_ids]
+            centroids = centroids[remaining_ids]
+            #print("reamining_ids", remaining_ids)
+
+        #print("DETECTIONS_LEN", len(u_detections))
         det_features = np.asarray(
             [track.curr_feat for track in u_detections], dtype=np.float32
         )
         distance_matrix = np.linalg.norm(det_features[:, np.newaxis, :] - centroids[np.newaxis, :, :], axis=2)  
         row_ind, col_ind = linear_sum_assignment(distance_matrix)
 
+        print("col_ind", col_ind)
+
         for ind in range(col_ind.shape[0]):
             #track = detections[inew]
             if u_detections[row_ind[ind]].conf < self.new_track_thresh:
                 continue
 
-            box_class = col_ind[ind]
+            box_class = remaining_ids[col_ind[ind]] if self.frame_count != 1 else col_ind[ind]
 
 
             
             u_detections[row_ind[ind]].activate(self.kalman_filter, self.frame_count, box_class)
             activated_stracks.append(u_detections[row_ind[ind]])
+
+
+
+
+
 
     def _update_tracks(
         self,
@@ -455,7 +472,10 @@ class BotSort(BaseTracker):
         self.active_tracks = [
             t for t in self.active_tracks if t.state == TrackState.Tracked
         ]
+        print("ACTIVE TRACKS BEFORE LEN", len(self.active_tracks))
+        print("ACTIVATED STRACKS LEN", len(activated_stracks))
         self.active_tracks = joint_stracks(self.active_tracks, activated_stracks)
+        print("ACTIVE TRACKS AFTER LEN", len(self.active_tracks))
         self.active_tracks = joint_stracks(self.active_tracks, refind_stracks)
         self.lost_stracks = sub_stracks(self.lost_stracks, self.active_tracks)
         self.lost_stracks.extend(lost_stracks)
