@@ -148,6 +148,7 @@ class BotSort(BaseTracker):
             img,
             dets,
         )
+        print("MATCHES LOST:", matches_lost)
 
         remaining_dets = [remaining_dets[i] for i in u_det_lost]
         
